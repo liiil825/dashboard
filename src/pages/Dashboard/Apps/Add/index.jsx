@@ -4,17 +4,17 @@ import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { translate } from 'react-i18next';
 
-import { Icon, Button, Upload, Notification } from 'components/Base';
-import Layout, { Grid } from 'components/Layout';
-import RepoList from './RepoList';
+import { Icon, Button, Input, Upload, Notification } from 'components/Base';
 import StepContent from './StepContent';
+import Footer from './Footer';
+import Card from './Card';
 
 import styles from './index.scss';
 
 @translate()
 @inject(({ rootStore }) => ({
   appStore: rootStore.appStore,
-  repoStore: rootStore.repoStore,
+  appCreateStore: rootStore.appCreateStore,
   user: rootStore.user
 }))
 @observer
@@ -28,183 +28,186 @@ export default class AppAdd extends Component {
   }
 
   componentWillUnmount() {
-    const { appStore } = this.props;
-    appStore.createReset();
+    this.props.appCreateStore.reset();
   }
 
-  setCreateStep = step => {
-    window.scroll({ top: 0, behavior: 'smooth' });
-    const { appStore } = this.props;
-    const { setCreateStep, createStep, createError } = appStore;
-    step = step ? step : createStep - 1;
-    appStore.createError = '';
-    if (step) {
-      setCreateStep(step);
-    } else {
-      history.back();
-    }
-  };
-
-  selectRepoNext = repos => {
-    const { repoStore, t } = this.props;
-
-    if (!repos.length) {
-      repoStore.info(t('Please select one repo'));
-      return;
+  renderTopLink() {
+    const { t, appCreateStore } = this.props;
+    const { createStep, prevStep, goBack } = appCreateStore;
+    if (createStep === 4) {
+      return null;
     }
 
-    this.setCreateStep(2);
-  };
-
-  onChange = repoId => {
-    const { repoStore, appStore } = this.props;
-    const { repos } = repoStore;
-
-    appStore.createReopId = repoId;
-    repos.forEach(repo => {
-      if (repo.repo_id === repoId) {
-        repo.active = true;
-      } else {
-        repo.active = false;
-      }
-    });
-  };
-
-  checkFile = file => {
-    let result = true;
-    const { appStore, t } = this.props;
-    const maxsize = 2 * 1024 * 1024;
-
-    if (!/\.(tar|tar\.gz|tar\.bz|tgz)$/.test(file.name.toLocaleLowerCase())) {
-      appVersionStore.createError = t('file_format_note');
-      return false;
-    } else if (file.size > maxsize) {
-      appVersionStore.createError = t('The file size cannot exceed 2M');
-      return false;
+    let text = '';
+    if (createStep > 1) {
+      text = t(`Create_App_Header_TIPS0${createStep}`);
+      text = `「${text}」`;
     }
-
-    return result;
-  };
-
-  uploadFile = (base64Str, file) => {
-    const { appStore } = this.props;
-    appStore.uploadFile = base64Str;
-    appStore.createOrModify();
-  };
-
-  renderSelectRepo() {
-    const { t } = this.props;
-    const { repos } = this.props.repoStore;
-
-    // filter s3 repos support upload package
-    const filterRepos = repos.filter(rp => rp.type.toLowerCase() === 's3');
-    const publicRepos = filterRepos.filter(repo => repo.visibility === 'public');
-    const privateRepos = filterRepos.filter(repo => repo.visibility === 'private');
-    const selectRepos = repos.filter(repo => repo.active && repo.type.toLowerCase() === 's3');
-    const name = t('creat_new_app');
-    const explain = t('select_repo_app');
 
     return (
-      <StepContent name={name} explain={explain} className={styles.createVersion}>
-        <div>
-          <RepoList type="public" repos={publicRepos} onChange={this.onChange} />
-          <RepoList type="private" repos={privateRepos} onChange={this.onChange} />
-        </div>
-        <div
-          onClick={() => this.selectRepoNext(selectRepos)}
-          className={classNames(styles.stepOperate, { [styles.noClick]: !selectRepos.length })}
-        >
-          {t('Next')} →
+      <div className={styles.operate}>
+        {createStep > 1 && (
+          <label onClick={prevStep}>
+            ←&nbsp;{t('Back')}&nbsp;
+            <span className={styles.operateText}>{text}</span>
+          </label>
+        )}
+        <label className="pull-right" onClick={goBack}>
+          {t('Esc')}&nbsp;
+          <Icon name="close" size={20} type="dark" />
+        </label>
+      </div>
+    );
+  }
+
+  renderSelectDeliveryType() {
+    const { appCreateStore } = this.props;
+    const { deliveryTypes, createStep } = appCreateStore;
+    return (
+      <StepContent createStep={createStep} className={styles.createApp}>
+        <div className={styles.cardContainer}>
+          {deliveryTypes.map(item => (
+            <Card key={item.intro} appCreateStore={appCreateStore} {...item} />
+          ))}
         </div>
       </StepContent>
     );
   }
 
-  renderUploadPackage() {
-    const { t } = this.props;
-    const { isLoading, createError } = this.props.appStore;
-    const name = t('creat_new_app');
-    const explain = t('Upload Package');
+  renderUploadConf() {
+    const { t, appCreateStore } = this.props;
+    const { isLoading, createStep, uploadStatus, errorMessage, checkFile, upload } = appCreateStore;
+    const configs = [
+      'Chart.yaml',
+      'LICENSE',
+      'README.md',
+      'requirements.yaml',
+      'values.yaml',
+      'charts/',
+      'templates/',
+      'templates/NOTES.txt'
+    ];
 
     return (
-      <StepContent name={name} explain={explain} className={styles.createVersion}>
-        <Upload checkFile={this.checkFile} uploadFile={this.uploadFile}>
-          <div className={classNames(styles.upload, { [styles.uploading]: isLoading })}>
-            <Icon name="upload" size={48} type="dark" />
-            <p className={styles.word}>{t('click_upload')}</p>
-            <p className={styles.note}>{t('file_format_note')}</p>
-            {isLoading && <div className={styles.loading} />}
+      <StepContent createStep={createStep} className={styles.createApp}>
+        <Upload t={t} checkFile={checkFile} uploadFile={upload}>
+          <div
+            className={classNames(styles.upload, {
+              /* [styles.uploading]: isLoading, */
+              [styles.uploadError]: !!errorMessage
+            })}
+          >
+            {!!isLoading && (
+              <div className={styles.loading}>
+                <Icon name="loading" size={48} type="dark" />
+                <p className={styles.note}>{t('file_format_loading')}</p>
+              </div>
+            )}
+            {!isLoading &&
+              !errorMessage && (
+                <div>
+                  <Icon name="upload" size={48} type="dark" />
+                  <p className={styles.note}>{t('file_format_note')}</p>
+                </div>
+              )}
+            {errorMessage && (
+              <div className={styles.errorNote}>
+                <Icon name="error" size={48} />
+                {errorMessage}
+                「<span className={styles.errorNoteLink}>{t('Upload again')}</span>」
+              </div>
+            )}
           </div>
         </Upload>
 
-        <div className={styles.operateWord}>
-          {t('view_guide_1')}
-          <a
-            className={styles.link}
-            target="_blank"
-            href="https://docs.openpitrix.io/v0.3/zh-CN/developer-guide/"
-          >
-            {t('view_guide_2')}
-          </a>
-          {t('view_guide_3')}
-        </div>
-        {createError && (
-          <div className={styles.errorNote}>
-            <Icon name="error" size={24} />
-            {createError}
-          </div>
-        )}
+        <ul className={styles.config}>
+          {configs.map(config => (
+            <li key={config}>
+              <span className={styles.configName}>{config}</span>
+              <span className={styles.configInfo}># {t(`${config}_Info`)}</span>
+            </li>
+          ))}
+          {uploadStatus === 'init' && <div className={styles.configMask} />}
+        </ul>
       </StepContent>
     );
   }
 
-  renderCreatedApp() {
-    const { t } = this.props;
-    const { createAppId } = this.props.appStore;
-    const name = t('Congratulations');
-    const explain = t('app_created');
+  renderConfirmMsg() {
+    const { t, appCreateStore } = this.props;
+    const { createStep, appName, appVersion, changeAppName, changeAppVersion } = appCreateStore;
 
     return (
-      <StepContent name={name} explain={explain} className={styles.createVersion}>
-        <div className={styles.checkImg}>
-          <label>
-            <Icon name="check" size={48} />
-          </label>
-        </div>
-        <div className={styles.operateBtn}>
-          <Link to={`/store/${createAppId}/deploy`}>
-            <Button type="primary">{t('Deploy & Test')}</Button>
-          </Link>
-          <Link to={`/dashboard/app/${createAppId}`}>
-            <Button>{t('View detail')}</Button>
-          </Link>
-        </div>
-        <div className={styles.operateWord}>
-          {t('go_back_app_1')}
-          <span onClick={() => this.setCreateStep(2)} className={styles.link}>
-            {t('go_back_app_2')}
-          </span>
-          {t('go_back_app_3')}
+      <StepContent createStep={createStep} className={styles.createApp}>
+        <div className={styles.configMsg}>
+          <div>
+            <label className={styles.configTitle}>{t('App Name')}</label>
+            <Input
+              value={appName}
+              onChange={changeAppName}
+              className={styles.appName}
+              name="appName"
+              placeholder=""
+            />
+            <span className={styles.tips}>{t('INPUT_APP_NAME_TIP')}</span>
+          </div>
+          <div>
+            <label className={styles.configTitle}>{t('Current Version')}</label>
+            <Input
+              value={appVersion}
+              onChange={changeAppVersion}
+              className={styles.appVersion}
+              name="appVersion"
+              placeholder=""
+            />
+            <span className={styles.tips}>{t('INPUT_APP_VERSION_TIP')}</span>
+          </div>
+          <div>
+            <label className={styles.configTitle}>{t('App Icon')}</label>
+            <Upload>
+              <div className={styles.appIcon}>
+                <Icon name="upload" size={24} type="dark" />
+              </div>
+            </Upload>
+            <span className={styles.tips}>{t('INPUT_APP_ICON_TIP')}</span>
+          </div>
         </div>
       </StepContent>
+    );
+  }
+  renderSuccessMsg() {
+    const { t } = this.props;
+
+    return (
+      <div className={styles.successMsg}>
+        <Icon className={styles.checkedIcon} name="checked-circle" size={48} />
+        <div className={styles.textTip}>{t('Congratulations on you')}</div>
+        <div className={styles.textHeader}>{t('Your app has been created successfully')}</div>
+        <div className={styles.successBtns}>
+          <Button type="primary" onClick={() => {}}>
+            {t('Deploy Test')}
+          </Button>
+          <Button onClick={() => {}} className={styles.addBtn}>
+            {t('Add delivery type')}
+          </Button>
+        </div>
+      </div>
     );
   }
 
   render() {
-    const { t } = this.props;
-    const { createStep } = this.props.appStore;
+    const { appCreateStore } = this.props;
+    const { createStep } = appCreateStore;
 
     return (
       <div className={styles.createApp}>
-        <div className={styles.operate}>
-          <label onClick={() => this.setCreateStep()}>←&nbsp;{t('Back')}</label>
-          <label className="pull-right" onClick={() => history.back()}>
-            <Icon name="close" size={24} type="dark" />&nbsp;{t('Esc')}
-          </label>
-        </div>
-        {createStep === 1 && this.renderSelectRepo()}
-        {createStep === 2 && this.renderUploadPackage()}
-        {createStep === 3 && this.renderCreatedApp()}
+        <div className={classNames(styles['header-step'], styles[`header-step-0${createStep}`])} />
+        {this.renderTopLink()}
+        {createStep === 1 && this.renderSelectDeliveryType()}
+        {createStep === 2 && this.renderUploadConf()}
+        {createStep === 3 && this.renderConfirmMsg()}
+        {createStep === 4 && this.renderSuccessMsg()}
+        <Footer store={appCreateStore} />
         <Notification />
       </div>
     );

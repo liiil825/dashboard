@@ -1,5 +1,5 @@
 import { observable, action } from 'mobx';
-import { get, assign } from 'lodash';
+import { get, assign, concat } from 'lodash';
 
 import Store from '../Store';
 import { getProgress } from 'utils';
@@ -18,7 +18,8 @@ export default class AppStore extends Store {
   @observable summaryInfo = {}; // replace original statistic
   @observable categoryTitle = '';
   @observable appId = ''; // current app_id
-  @observable isLoading = false;
+  @observable isLoading = true;
+  @observable pageLoading = true;
   @observable isProgressive = false;
   @observable totalCount = 0;
   @observable appCount = 0;
@@ -49,6 +50,8 @@ export default class AppStore extends Store {
   @observable uploadFile = '';
   @observable createError = '';
   @observable createResult = null;
+
+  @observable hasMore = false;
 
   // menu actions logic
   @observable
@@ -109,7 +112,12 @@ export default class AppStore extends Store {
 
     const result = await this.request.get('apps', assign(defaultParams, params));
 
-    this.apps = get(result, 'app_set', []);
+    const apps = get(result, 'app_set', []);
+    if (params.loadMore) {
+      this.apps = concat(this.apps, apps);
+    } else {
+      this.apps = apps;
+    }
     this.totalCount = get(result, 'total_count', 0);
 
     // appCount for show repo datail page "App Count"
@@ -119,6 +127,7 @@ export default class AppStore extends Store {
 
     this.isLoading = false;
     this.isProgressive = false;
+    this.hasMore = this.totalCount > (this.currentPage + 1) * this.pageSize;
   };
 
   @action
@@ -281,6 +290,11 @@ export default class AppStore extends Store {
   changePagination = async page => {
     this.currentPage = page;
     await this.fetchAll();
+  };
+  @action
+  loadMore = async page => {
+    this.currentPage = page;
+    await this.fetchAll({ loadMore: true });
   };
 
   @action

@@ -42,7 +42,7 @@ export default class Upload extends Component {
 
   state = {
     uid: getUid(),
-    isDraging: true
+    isDraging: false
   };
 
   componentDidMount() {
@@ -106,8 +106,8 @@ export default class Upload extends Component {
   };
 
   upload(file) {
-    const { checkFile, uploadFile } = this.props;
-    if (checkFile !== noop && checkFile(file)) {
+    const { checkFile, uploadFile, t } = this.props;
+    if (checkFile !== noop && checkFile({ file, t })) {
       let reader = new FileReader();
       reader.readAsDataURL(file, 'UTF-8');
       reader.onload = function() {
@@ -116,7 +116,7 @@ export default class Upload extends Component {
           fileStringBase64.indexOf(',') + 1,
           fileStringBase64.length
         );
-        uploadFile(fileStringBase64, file);
+        uploadFile({ base64Str: fileStringBase64, file });
       };
     }
   }

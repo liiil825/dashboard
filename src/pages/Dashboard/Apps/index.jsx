@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { translate } from 'react-i18next';
 import { filter, get, orderBy, capitalize } from 'lodash';
 
@@ -26,10 +26,16 @@ import styles from './index.scss';
   user: rootStore.user
 }))
 @observer
-export default class Apps extends Component {
+class Apps extends Component {
   async componentDidMount() {
-    const { appStore, userStore, user, categoryStore, repoStore } = this.props;
+    const { appStore, userStore, user, categoryStore, repoStore, history } = this.props;
     const { isAdmin } = user;
+    if (!isAdmin) {
+      history.push({
+        pathname: '/dev/apps/mine',
+        state: { fromDashboard: true }
+      });
+    }
 
     await appStore.fetchAll();
     if (isAdmin) {
@@ -369,3 +375,4 @@ export default class Apps extends Component {
     );
   }
 }
+export default withRouter(Apps);
