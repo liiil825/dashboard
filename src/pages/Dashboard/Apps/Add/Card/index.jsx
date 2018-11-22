@@ -15,25 +15,27 @@ export default class CreateAppCard extends Component {
   static propTypes = {
     appCreateStore: PropTypes.object,
     name: PropTypes.string,
+    value: PropTypes.string,
     intro: PropTypes.string,
     children: PropTypes.node,
     className: PropTypes.string
   };
 
   render() {
-    const { name, icon, intro, introLink, className, t, appCreateStore } = this.props;
-    const { selectDeliveryType, selectedType, checkAddedDelivery } = appCreateStore;
-    const isAdded = checkAddedDelivery(name);
+    const { name, value, icon, intro, introLink, className, t, appCreateStore } = this.props;
+    const { attribute, selectVersionType, checkAddedDelivery } = appCreateStore;
+    const { version_type } = attribute;
+    const isAdded = checkAddedDelivery(value);
 
     return (
       <div
-        onClick={() => selectDeliveryType(name)}
+        onClick={() => selectVersionType(value)}
         className={classNames(styles.container, className, {
           [styles.addedContainer]: isAdded
         })}
       >
         {isAdded && <span className={styles.addedType}>{t('Added')} </span>}
-        {name === selectedType && (
+        {value === version_type && (
           <Icon className={styles.checkedIcon} name="checked-circle" size={20} />
         )}
         <Icon name={icon} size={48} className={styles.icon} type={'light'} />

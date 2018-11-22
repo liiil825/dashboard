@@ -1,5 +1,44 @@
 @import '~scss/vars';
 
+.headerStep {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background-color: $Y75;
+}
+
+.operate {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  height: 32px;
+
+  > label {
+    display: inline-block;
+    font-size: 12px;
+    line-height: 32px;
+    color: $N300;
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0 12px;
+    // background: $N10;
+  }
+  :global {
+    .icon-close {
+      position: static;
+      transform: none;
+      vertical-align: middle;
+      margin-top: -1px;
+    }
+  }
+}
+.operateText {
+  color: $N65;
+}
+
+
 .footer {
   position: fixed;
   bottom: 0;
@@ -62,3 +101,26 @@
     }
   }
 }
+
+.stepContent {
+  padding: 100px 0 0;
+  min-width: 700px;
+  text-align: center;
+
+  .stepName {
+    margin-bottom: 4px;
+    font-size: 14px;
+    line-height: 24px;
+    color: $N300;
+  }
+
+  .stepExplain {
+    margin-bottom: 32px;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: 0;
+    color: $N500;
+  }
+}
+

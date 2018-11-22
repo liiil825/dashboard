@@ -7,11 +7,8 @@
 
   "Delivery type": "交付方式",
 
-  "CREAT_NEW_APP_HEADER": "创建应用 {{createStep}}/{{totalStep}}",
   "creat_new_version": "创建新版本",
-  "CREATE_APP_HEADER_TIPS01": "选择应用的交付类型",
-  "CREATE_APP_HEADER_TIPS02": "上传配置文件",
-  "CREATE_APP_HEADER_TIPS03": "确认应用基本信息",
+
   "INPUT_APP_NAME_TIP": "清晰、准确的命名对于一款上架应用格外重要。",
   "INPUT_APP_VERSION_TIP": "通常由字母、数字组成，是应用的版本的重要标识。",
   "INPUT_APP_ICON_TIP": "格式：png/svg 背景透明最佳；大小：96px * 96px",
@@ -66,19 +63,24 @@
   "templates/_Info": "[可选] 部署文件模版目录，模版填入 values.yaml 中相应值，生成最终的 kubernetes 配置文件",
   "templates/NOTES.txt_Info": "[可选] 使用指南",
   "Upload again": "重新上传",
+  "Select a file": "选择文件",
 
   "Search for app name or ID": "搜索应用名称或 ID",
 
+  "STEPPER_NAME_CREATE_APP_HEADER": "创建应用 {{activeStep}}/{{steps}}",
+  "STEPPER_TITLE_CREATE_APP_1": "选择应用的交付类型",
+  "STEPPER_TITLE_CREATE_APP_2": "上传配置文件",
+  "STEPPER_TITLE_CREATE_APP_3": "确认应用基本信息",
+  "STEPPER_HEADER_CREATE_APP_2": "「选择应用的交付类型」",
+  "STEPPER_HEADER_CREATE_APP_3": "「上传配置文件」",
+  "STEPPER_HEADER_CREATE_APP_3": "「确认应用基本信息」",
+  "STEPPER_FOOTER_CREATE_APP_1": "一款应用可以支持多种交付方式，管理过程中可以随时添加。",
+  "STEPPER_FOOTER_CREATE_APP_2": "完整的应用开发规范请参看",
+  "STEPPER_FOOTER_CREATE_APP_3": "以上信息调整之后将会自动更新配置文件中的对应内容。",
+  "LINK_STEPPER_FOOTER_CREATE_APP_2": "《Helm 规范及应用开发》。",
+
+  "icon_format_note": "图标最佳格式为 png/svg，请重新上传",
+
   "Go on": "继续",
-  "Select the delivery type of the app": "选择应用的交付类型",
-  "Create_App_Header_TIPS02": "选择应用的交付类型",
-  "Create_App_Header_TIPS03": "上传配置文件",
-  "Create_App_TIPS01": "一款应用可以支持多种交付方式，管理过程中可以随时添加。",
-  "Create_App_TIPS02": "完整的应用开发规范请参看",
-  "Create_App_TIPS03": "以上信息调整之后将会自动更新配置文件中的对应内容。",
-  "Create_App_TIPS02_Link": "《Helm 规范及应用开发》",
-  "Create_App_Button_Next_01": "继续",
-  "Create_App_Button_Next_02": "继续",
-  "Create_App_Button_Next_03": "继续",
-  "Create_App_Button_Next_04": "完成"
+  "Done": "完成"
 }
