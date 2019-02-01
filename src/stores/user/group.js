@@ -121,12 +121,12 @@ export default class GroupStore extends Store {
       'group_id'
     );
     groupIds = _.uniq(groupIds);
-    groupIds.forEach(async groupId => {
+    await groupIds.forEach(async groupId => {
       const data = {
         group_id: [groupId],
         user_id: this.userSelectedIds
       };
-      await this.request.post('groups:leave', data);
+      this.request.post('groups:leave', data);
     });
 
     this.userStore.selectIds = [];
@@ -155,6 +155,10 @@ export default class GroupStore extends Store {
   onSelectOrg = (keys, info) => {
     this.selectedGroupIds = keys;
     this.selectedRowKeys = [];
+    _.assign(this.userStore, {
+      selectIds: [],
+      selectedRowKeys: []
+    });
     this.groupName = keys.length ? _.get(info, 'node.props.title') : '';
     this.fetchUser();
   };
