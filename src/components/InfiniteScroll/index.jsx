@@ -52,10 +52,12 @@ export default class InfiniteScroll extends Component {
     this.detachMousewheelListener();
   }
 
+  get eventOption() {
+    return { passive: false, capture: this.props.useCapture };
+  }
+
   attachScrollListener() {
-    const {
-      hasMore, isLoading, initialLoad, useCapture
-    } = this.props;
+    const { hasMore, isLoading, initialLoad } = this.props;
 
     // Don't attach event listeners if we have no more items to load or when it's loaing
     if (!hasMore || isLoading) {
@@ -66,10 +68,10 @@ export default class InfiniteScroll extends Component {
     scrollEl.addEventListener(
       'mousewheel',
       this.mousewheelListener,
-      useCapture
+      this.eventOption
     );
-    scrollEl.addEventListener('scroll', this.scrollListener, useCapture);
-    scrollEl.addEventListener('resize', this.scrollListener, useCapture);
+    scrollEl.addEventListener('scroll', this.scrollListener, this.eventOption);
+    scrollEl.addEventListener('resize', this.scrollListener, this.eventOption);
 
     if (initialLoad) {
       this.scrollListener();
@@ -101,22 +103,26 @@ export default class InfiniteScroll extends Component {
   }
 
   detachMousewheelListener() {
-    const { useCapture } = this.props;
-
     const scrollEl = this.getParentElement();
     scrollEl.removeEventListener(
       'mousewheel',
       this.mousewheelListener,
-      useCapture
+      this.eventOption
     );
   }
 
   detachScrollListener() {
-    const { useCapture } = this.props;
-
     const scrollEl = this.getParentElement();
-    scrollEl.removeEventListener('scroll', this.scrollListener, useCapture);
-    scrollEl.removeEventListener('resize', this.scrollListener, useCapture);
+    scrollEl.removeEventListener(
+      'scroll',
+      this.scrollListener,
+      this.eventOption
+    );
+    scrollEl.removeEventListener(
+      'resize',
+      this.scrollListener,
+      this.eventOption
+    );
   }
 
   getScrollableElement() {
@@ -176,23 +182,25 @@ export default class InfiniteScroll extends Component {
   }
 
   render() {
-    const {
-      children,
-      hasMore,
-      initialLoad,
-      isLoading,
-      loader,
-      loadMore,
-      pageStart,
-      threshold,
-      useCapture,
-      useWindow,
-      ...props
-    } = this.props;
+    const { className, children } = this.props;
+    const restProps = _.omit(this.props, [
+      'hasMore',
+      'initialLoad',
+      'isLoading',
+      'loader',
+      'loadMore',
+      'pageStart',
+      'threshold',
+      'useCapture',
+      'useWindow'
+    ]);
+    const childrenClone = React.Children.map(children, child => React.cloneElement(child, {
+      ...restProps
+    }));
 
     return (
-      <div ref={this.setContainerRef} {...props}>
-        {children}
+      <div className={className} ref={this.setContainerRef}>
+        {childrenClone}
         {this.renderLoadMore()}
       </div>
     );
